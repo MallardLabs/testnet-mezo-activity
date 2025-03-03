@@ -1,4 +1,4 @@
-const { getStore } = require('@netlify/blobs');
+const faunadb = require('faunadb');
 
 exports.handler = async function(event, context) {
   console.log("Function invoked with method:", event.httpMethod);
