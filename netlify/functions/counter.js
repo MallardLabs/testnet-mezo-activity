@@ -44,59 +44,80 @@ exports.handler = async function(event, context) {
         }
       }
       
-      // Check if index exists, create if not
+      // Create the index directly without checking if it exists
+      // This will fail if it already exists, but we'll catch the error
       try {
-        await client.query(q.Get(q.Index('counters_by_name')));
-        console.log("Index 'counters_by_name' exists");
+        console.log("Attempting to create 'counters_by_name' index");
+        await client.query(
+          q.CreateIndex({
+            name: 'counters_by_name',
+            source: q.Collection('counters'),
+            terms: [{ field: ['data', 'name'] }]
+          })
+        );
+        console.log("Successfully created 'counters_by_name' index");
       } catch (err) {
-        if (err.name === 'NotFound') {
-          console.log("Creating 'counters_by_name' index");
-          await client.query(
-            q.CreateIndex({
-              name: 'counters_by_name',
-              source: q.Collection('counters'),
-              terms: [{ field: ['data', 'name'] }]
-            })
-          );
+        // If the error is because the index already exists, that's fine
+        if (err.description && err.description.includes('already exists')) {
+          console.log("Index 'counters_by_name' already exists");
         } else {
-          throw err;
+          console.error("Error creating index:", err);
         }
       }
     } catch (err) {
       console.error("Error setting up database:", err);
     }
     
+    // Simple counter implementation without using the index yet
     if (event.httpMethod === 'GET') {
       console.log("Processing GET request");
       
-      // Try to get the counter document
+      // Get all documents from the counters collection
       try {
         const result = await client.query(
-          q.Get(
-            q.Match(q.Index('counters_by_name'), 'visit-counter')
+          q.Map(
+            q.Paginate(q.Documents(q.Collection('counters'))),
+            q.Lambda('ref', q.Get(q.Var('ref')))
           )
         );
         
-        console.log("Retrieved counter document:", result);
+        // Find the counter document
+        const counterDoc = result.data.find(doc => doc.data.name === 'visit-counter');
         
-        const data = result.data;
-        const todayCount = data.daily && data.daily[today] ? data.daily[today] : 0;
-        
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({ 
-            total: data.total || 0, 
-            today: todayCount,
-            debug: {
-              time: new Date().toISOString(),
-              fauna: true
-            }
-          })
-        };
+        if (counterDoc) {
+          console.log("Found counter document:", counterDoc);
+          const data = counterDoc.data;
+          const todayCount = data.daily && data.daily[today] ? data.daily[today] : 0;
+          
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ 
+              total: data.total || 0, 
+              today: todayCount,
+              debug: {
+                time: new Date().toISOString(),
+                fauna: true
+              }
+            })
+          };
+        } else {
+          console.log("Counter document not found");
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ 
+              total: 0, 
+              today: 0,
+              debug: {
+                time: new Date().toISOString(),
+                error: "Counter not found"
+              }
+            })
+          };
+        }
       } catch (err) {
-        console.log("Counter not found, returning zeros:", err.message);
-        // If the counter doesn't exist yet, return zeros
+        console.log("Error getting counters:", err.message);
         return {
           statusCode: 200,
           headers,
@@ -114,21 +135,30 @@ exports.handler = async function(event, context) {
     } else if (event.httpMethod === 'POST') {
       console.log("Processing POST request");
       
-      // Try to get the counter document
-      let counterExists = true;
+      // Get all documents from the counters collection
+      let counterExists = false;
+      let counterRef = null;
       let data = { total: 0, daily: {} };
       
       try {
         const result = await client.query(
-          q.Get(
-            q.Match(q.Index('counters_by_name'), 'visit-counter')
+          q.Map(
+            q.Paginate(q.Documents(q.Collection('counters'))),
+            q.Lambda('ref', q.Get(q.Var('ref')))
           )
         );
-        console.log("Retrieved existing counter:", result);
-        data = result.data;
+        
+        // Find the counter document
+        const counterDoc = result.data.find(doc => doc.data.name === 'visit-counter');
+        
+        if (counterDoc) {
+          console.log("Found existing counter:", counterDoc);
+          counterExists = true;
+          counterRef = counterDoc.ref;
+          data = counterDoc.data;
+        }
       } catch (err) {
-        console.log("Counter not found, will create new one:", err.message);
-        counterExists = false;
+        console.log("Error getting counters:", err.message);
       }
       
       // Increment the counts
@@ -140,16 +170,11 @@ exports.handler = async function(event, context) {
       
       // Update or create the counter
       try {
-        if (counterExists) {
+        if (counterExists && counterRef) {
           console.log("Updating existing counter");
           await client.query(
             q.Update(
-              q.Select(
-                'ref',
-                q.Get(
-                  q.Match(q.Index('counters_by_name'), 'visit-counter')
-                )
-              ),
+              counterRef,
               { data }
             )
           );
