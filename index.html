@@ -216,6 +216,17 @@
       word-break: break-all;
     }
 
+    .address-cell a {
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .address-cell a:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+
     .pagination {
       display: flex;
       justify-content: space-between;
@@ -689,55 +700,43 @@
     
     // Render activity table
     function renderActivityTable() {
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = Math.min(startIndex + itemsPerPage, filteredData.length);
-      const displayData = filteredData.slice(startIndex, endIndex);
+      const tableBody = document.getElementById('activity-table-body');
+      tableBody.innerHTML = '';
       
-      activityTableBody.innerHTML = '';
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = Math.min(start + itemsPerPage, filteredData.length);
       
-      if (displayData.length === 0) {
-        const emptyRow = document.createElement('tr');
-        const emptyCell = document.createElement('td');
-        emptyCell.colSpan = 5;
-        emptyCell.textContent = 'No data available';
-        emptyCell.style.textAlign = 'center';
-        emptyRow.appendChild(emptyCell);
-        activityTableBody.appendChild(emptyRow);
-      } else {
-        displayData.forEach(item => {
-          const row = document.createElement('tr');
-          
-          const addressCell = document.createElement('td');
-          addressCell.textContent = item.address;
-          addressCell.classList.add('address-cell');
-          
-          const txCountCell = document.createElement('td');
-          txCountCell.textContent = item.tx_count;
-          
-          const deployedContractsCell = document.createElement('td');
-          deployedContractsCell.textContent = item.deployed_contracts;
-          
-          const deployedContractsTxCell = document.createElement('td');
-          deployedContractsTxCell.textContent = item.deployed_contracts_tx_count;
-          
-          const claimedBtcCell = document.createElement('td');
-          claimedBtcCell.textContent = formatClaimedSats(item.claimed_btc);
-          
-          row.appendChild(addressCell);
-          row.appendChild(txCountCell);
-          row.appendChild(deployedContractsCell);
-          row.appendChild(deployedContractsTxCell);
-          row.appendChild(claimedBtcCell);
-          
-          activityTableBody.appendChild(row);
-        });
+      for (let i = start; i < end; i++) {
+        const item = filteredData[i];
+        const row = document.createElement('tr');
+        
+        // Create address cell with link
+        const addressCell = document.createElement('td');
+        addressCell.className = 'address-cell';
+        const addressLink = document.createElement('a');
+        addressLink.href = `https://explorer.test.mezo.org/address/${item.address}`;
+        addressLink.target = '_blank'; // Open in new tab
+        addressLink.rel = 'noopener noreferrer'; // Security best practice
+        addressLink.textContent = item.address;
+        addressCell.appendChild(addressLink);
+        
+        // Add other cells
+        row.appendChild(addressCell);
+        row.innerHTML += `
+          <td>${formatNumber(item.tx_count)}</td>
+          <td>${formatNumber(item.deployed_contracts)}</td>
+          <td>${formatNumber(item.deployed_contracts_tx_count)}</td>
+          <td>${formatNumber(item.claimed_btc)}</td>
+        `;
+        
+        tableBody.appendChild(row);
       }
       
       // Update pagination info
       const totalPages = Math.ceil(filteredData.length / itemsPerPage);
       totalPagesElement.textContent = totalPages;
-      currentRangeStart.textContent = filteredData.length > 0 ? startIndex + 1 : 0;
-      currentRangeEnd.textContent = endIndex;
+      currentRangeStart.textContent = filteredData.length > 0 ? start + 1 : 0;
+      currentRangeEnd.textContent = end;
       totalItemsElement.textContent = filteredData.length;
       
       // Update page input
