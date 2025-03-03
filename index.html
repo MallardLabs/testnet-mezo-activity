@@ -349,13 +349,6 @@
   <header>
     <div class="header-content">
       <div class="logo">Mezo Matsnet Activity Statistics</div>
-      <nav>
-        <ul>
-          <li><a href="#" id="nav-activity" class="active">Activity</a></li>
-          <li><a href="#" id="nav-stats">Statistics</a></li>
-          <li><a href="#" id="nav-search">Search</a></li>
-        </ul>
-      </nav>
     </div>
   </header>
 
@@ -369,123 +362,93 @@
     </div>
 
     <div id="main-content" class="main-content hidden">
-      <!-- Activity Tab -->
-      <div id="activity-tab" class="tab-content active">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Address Activity</h2>
+      <!-- Statistics Section -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Dataset Statistics</h2>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Addresses</div>
+            <div class="stat-value" id="total-addresses">0</div>
           </div>
-          <div class="items-per-page">
-            <label for="items-per-page">Items per page:</label>
-            <select id="items-per-page">
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="25">25</option>
-              <option value="50">50</option>
-            </select>
+          <div class="stat-card">
+            <div class="stat-label">Total Transactions</div>
+            <div class="stat-value" id="total-transactions">0</div>
           </div>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Address</th>
-                <th>Transactions</th>
-                <th>Deployed Contracts</th>
-                <th>Contract Txs</th>
-                <th>Claimed Matsnet Sats</th>
-              </tr>
-            </thead>
-            <tbody id="activity-table-body">
-              <!-- Data will be populated here -->
-            </tbody>
-          </table>
-          <div class="pagination">
-            <div class="page-info">
-              Showing <span id="current-range-start">0</span>-<span id="current-range-end">0</span> of <span id="total-items">0</span> addresses
-            </div>
-            <div class="pagination-controls">
-              <button id="first-page" class="btn">First</button>
-              <button id="prev-page" class="btn">Previous</button>
-              <div class="jump-to-page">
-                <span>Page</span>
-                <input type="number" id="page-input" min="1" value="1">
-                <span>of <span id="total-pages">1</span></span>
-                <button id="go-to-page" class="btn">Go</button>
-              </div>
-              <button id="next-page" class="btn">Next</button>
-              <button id="last-page" class="btn">Last</button>
-            </div>
+          <div class="stat-card">
+            <div class="stat-label">Average Transactions</div>
+            <div class="stat-value" id="avg-transactions">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Max Transactions</div>
+            <div class="stat-value" id="max-transactions">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Deployed Contracts</div>
+            <div class="stat-value" id="total-contracts">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Addresses with Contracts</div>
+            <div class="stat-value" id="addresses-with-contracts">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Claimed Matsnet Sats</div>
+            <div class="stat-value" id="total-claimed-btc">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Addresses with Claimed Sats</div>
+            <div class="stat-value" id="addresses-with-btc">0</div>
           </div>
         </div>
       </div>
 
-      <!-- Statistics Tab -->
-      <div id="stats-tab" class="tab-content">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Dataset Statistics</h2>
-          </div>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-label">Total Addresses</div>
-              <div class="stat-value" id="total-addresses">0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Transactions</div>
-              <div class="stat-value" id="total-transactions">0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Average Transactions</div>
-              <div class="stat-value" id="avg-transactions">0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Max Transactions</div>
-              <div class="stat-value" id="max-transactions">0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Deployed Contracts</div>
-              <div class="stat-value" id="total-contracts">0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Addresses with Contracts</div>
-              <div class="stat-value" id="addresses-with-contracts">0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Claimed Matsnet Sats</div>
-              <div class="stat-value" id="total-claimed-btc">0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Addresses with Claimed Sats</div>
-              <div class="stat-value" id="addresses-with-btc">0</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Search Tab -->
-      <div id="search-tab" class="tab-content">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Address Search</h2>
-          </div>
+      <!-- Activity Table Section -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Address Activity</h2>
           <div class="search-box">
-            <input type="text" id="address-search" class="search-input" placeholder="Enter full or partial address...">
-            <button id="search-button" class="btn">Search</button>
+            <input type="text" id="address-search" class="search-input" placeholder="Search by address...">
           </div>
-          <div id="search-results">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Address</th>
-                  <th>Transactions</th>
-                  <th>Deployed Contracts</th>
-                  <th>Contract Txs</th>
-                  <th>Claimed Matsnet Sats</th>
-                </tr>
-              </thead>
-              <tbody id="search-results-body">
-                <!-- Search results will be populated here -->
-              </tbody>
-            </table>
+        </div>
+        <div class="items-per-page">
+          <label for="items-per-page">Items per page:</label>
+          <select id="items-per-page">
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Address</th>
+              <th>Transactions</th>
+              <th>Deployed Contracts</th>
+              <th>Contract Txs</th>
+              <th>Claimed Matsnet Sats</th>
+            </tr>
+          </thead>
+          <tbody id="activity-table-body">
+            <!-- Data will be populated here -->
+          </tbody>
+        </table>
+        <div class="pagination">
+          <div class="page-info">
+            Showing <span id="current-range-start">0</span>-<span id="current-range-end">0</span> of <span id="total-items">0</span> addresses
+          </div>
+          <div class="pagination-controls">
+            <button id="first-page" class="btn">First</button>
+            <button id="prev-page" class="btn">Previous</button>
+            <div class="jump-to-page">
+              <span>Page</span>
+              <input type="number" id="page-input" min="1" value="1">
+              <span>of <span id="total-pages">1</span></span>
+              <button id="go-to-page" class="btn">Go</button>
+            </div>
+            <button id="next-page" class="btn">Next</button>
+            <button id="last-page" class="btn">Last</button>
           </div>
         </div>
       </div>
@@ -499,7 +462,7 @@
     // State management
     let activityData = [];
     let currentPage = 1;
-    let itemsPerPage = 5;
+    let itemsPerPage = 10;
     let filteredData = [];
     
     // DOM Elements
@@ -521,14 +484,6 @@
     const totalItemsElement = document.getElementById('total-items');
     const addressSearchInput = document.getElementById('address-search');
     const searchButton = document.getElementById('search-button');
-    
-    // Tab navigation
-    const navActivity = document.getElementById('nav-activity');
-    const navStats = document.getElementById('nav-stats');
-    const navSearch = document.getElementById('nav-search');
-    const activityTab = document.getElementById('activity-tab');
-    const statsTab = document.getElementById('stats-tab');
-    const searchTab = document.getElementById('search-tab');
     
     // Stats elements
     const totalAddressesElement = document.getElementById('total-addresses');
@@ -613,7 +568,7 @@
           deployedContractsTxCell.textContent = item.deployed_contracts_tx_count;
           
           const claimedBtcCell = document.createElement('td');
-          claimedBtcCell.textContent = formatNumber(item.claimed_btc);
+          claimedBtcCell.textContent = formatClaimedSats(item.claimed_btc);
           
           row.appendChild(addressCell);
           row.appendChild(txCountCell);
@@ -653,7 +608,7 @@
       const totalContracts = activityData.reduce((sum, item) => sum + item.deployed_contracts, 0);
       const addressesWithContracts = activityData.filter(item => item.deployed_contracts > 0).length;
       
-      const totalClaimedBtc = activityData.reduce((sum, item) => sum + Number(item.claimed_btc), 0);
+      const totalClaimedBtc = activityData.reduce((sum, item) => sum + Math.floor(Number(item.claimed_btc) / 10000000000), 0);
       const addressesWithBtc = activityData.filter(item => Number(item.claimed_btc) > 0).length;
       
       totalAddressesElement.textContent = formatNumber(totalAddresses);
@@ -671,86 +626,20 @@
       const searchTerm = addressSearchInput.value.trim().toLowerCase();
       
       if (searchTerm === '') {
-        // Clear search
-        searchResultsBody.innerHTML = '';
-        const emptyRow = document.createElement('tr');
-        const emptyCell = document.createElement('td');
-        emptyCell.colSpan = 5;
-        emptyCell.textContent = 'Enter an address to search';
-        emptyCell.style.textAlign = 'center';
-        emptyRow.appendChild(emptyCell);
-        searchResultsBody.appendChild(emptyRow);
-        return;
-      }
-      
-      const results = activityData.filter(item => 
-        item.address.toLowerCase().includes(searchTerm)
-      );
-      
-      searchResultsBody.innerHTML = '';
-      
-      if (results.length === 0) {
-        const emptyRow = document.createElement('tr');
-        const emptyCell = document.createElement('td');
-        emptyCell.colSpan = 5;
-        emptyCell.textContent = 'No matching addresses found';
-        emptyCell.style.textAlign = 'center';
-        emptyRow.appendChild(emptyCell);
-        searchResultsBody.appendChild(emptyRow);
+        filteredData = [...activityData];
       } else {
-        results.forEach(item => {
-          const row = document.createElement('tr');
-          
-          const addressCell = document.createElement('td');
-          addressCell.textContent = item.address;
-          addressCell.classList.add('address-cell');
-          
-          const txCountCell = document.createElement('td');
-          txCountCell.textContent = item.tx_count;
-          
-          const deployedContractsCell = document.createElement('td');
-          deployedContractsCell.textContent = item.deployed_contracts;
-          
-          const deployedContractsTxCell = document.createElement('td');
-          deployedContractsTxCell.textContent = item.deployed_contracts_tx_count;
-          
-          const claimedBtcCell = document.createElement('td');
-          claimedBtcCell.textContent = formatNumber(item.claimed_btc);
-          
-          row.appendChild(addressCell);
-          row.appendChild(txCountCell);
-          row.appendChild(deployedContractsCell);
-          row.appendChild(deployedContractsTxCell);
-          row.appendChild(claimedBtcCell);
-          
-          searchResultsBody.appendChild(row);
-        });
+        filteredData = activityData.filter(item => 
+          item.address.toLowerCase().includes(searchTerm)
+        );
       }
+      
+      currentPage = 1;
+      renderActivityTable();
     }
     
-    // Switch tabs
-    function switchTab(tabId) {
-      // Hide all tabs
-      activityTab.classList.remove('active');
-      statsTab.classList.remove('active');
-      searchTab.classList.remove('active');
-      
-      // Remove active class from all nav items
-      navActivity.classList.remove('active');
-      navStats.classList.remove('active');
-      navSearch.classList.remove('active');
-      
-      // Show selected tab
-      document.getElementById(tabId).classList.add('active');
-      
-      // Add active class to selected nav item
-      if (tabId === 'activity-tab') {
-        navActivity.classList.add('active');
-      } else if (tabId === 'stats-tab') {
-        navStats.classList.add('active');
-      } else if (tabId === 'search-tab') {
-        navSearch.classList.add('active');
-      }
+    // Update the claimed BTC calculation
+    function formatClaimedSats(value) {
+      return formatNumber(Math.floor(Number(value) / 10000000000));
     }
     
     // Event listeners
@@ -799,8 +688,16 @@
       }
     });
     
-    searchButton.addEventListener('click', searchAddress);
+    addressSearchInput.addEventListener('input', searchAddress);
     
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      fetchData();
+    });
+  </script>
+</body>
+</html>
+
     addressSearchInput.addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
         searchAddress();
