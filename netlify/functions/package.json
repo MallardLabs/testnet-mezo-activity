@@ -1,0 +1,8 @@
+{
+    "name": "visits-function",
+    "version": "1.0.0",
+    "dependencies": {
+      "@netlify/functions": "^2.0.0",
+      "faunadb": "^4.8.0"
+    }
+  }

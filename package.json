@@ -1,8 +1,8 @@
 {
-  "name": "visits-function",
+  "name": "mezo-activity-site",
   "version": "1.0.0",
+  "private": true,
   "dependencies": {
-    "@netlify/functions": "^2.0.0",
     "faunadb": "^4.8.0"
   }
 }
