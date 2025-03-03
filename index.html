@@ -552,10 +552,16 @@
         errorContainer.classList.add('hidden');
         mainContent.classList.add('hidden');
         
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
         
         if (!response.ok) {
-          throw new Error('Failed to fetch data');
+          throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
         }
         
         const data = await response.json();
@@ -570,8 +576,8 @@
           throw new Error('Invalid data format');
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        errorContainer.textContent = 'Error loading data: ' + error.message;
+        console.error('Detailed fetch error:', error);
+        errorContainer.textContent = `Error loading data: ${error.message}`;
         errorContainer.classList.remove('hidden');
       } finally {
         loadingElement.classList.add('hidden');
