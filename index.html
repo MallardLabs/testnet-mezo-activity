@@ -494,7 +494,7 @@
 
   <script>
     // API URL
-    const API_URL = 'https://activity.test.mezo.org/';
+    const API_URL = 'https://corsproxy.io/?https://activity.test.mezo.org/';
     
     // State management
     let activityData = [];
@@ -576,8 +576,8 @@
           throw new Error('Invalid data format');
         }
       } catch (error) {
-        console.error('Detailed fetch error:', error);
-        errorContainer.textContent = `Error loading data: ${error.message}`;
+        console.error('Error fetching data:', error);
+        errorContainer.textContent = 'Error loading data: ' + error.message;
         errorContainer.classList.remove('hidden');
       } finally {
         loadingElement.classList.add('hidden');
