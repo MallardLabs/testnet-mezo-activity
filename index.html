@@ -90,6 +90,15 @@
       opacity: 0.8;
     }
 
+    .visit-counter {
+      background-color: rgba(0, 0, 0, 0.1);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-top: 5px;
+      display: inline-block;
+    }
+
     .main-content {
       margin-top: 40px;
     }
@@ -373,7 +382,12 @@
 <body>
   <header>
     <div class="header-content">
-      <div class="logo">Mezo Matsnet Activity Statistics</div>
+      <div class="logo">
+        Mezo Matsnet Activity Statistics
+        <div class="visit-counter">
+          <span id="total-visits">0</span> total visits | <span id="today-visits">0</span> today
+        </div>
+      </div>
       <div class="credit">
         <a href="https://mallardlabs.xyz" target="_blank">by Mallard Labs</a>
       </div>
@@ -486,10 +500,6 @@
         </div>
       </div>
     </div>
-
-    <div class="visit-counter">
-      <span id="total-visits">0</span> total visits | <span id="today-visits">0</span> today
-    </div>
   </div>
 
   <script>
@@ -522,6 +532,8 @@
     const totalItemsElement = document.getElementById('total-items');
     const addressSearchInput = document.getElementById('address-search');
     const tableHeaders = document.querySelectorAll('.data-table th[data-sort]');
+    const totalVisitsElement = document.getElementById('total-visits');
+    const todayVisitsElement = document.getElementById('today-visits');
     
     // Stats elements
     const totalAddressesElement = document.getElementById('total-addresses');
@@ -541,6 +553,67 @@
     // Format claimed sats (divide by 10^10)
     function formatClaimedSats(value) {
       return formatNumber(Math.floor(Number(value) / 10000000000));
+    }
+    
+    // Display visit counts
+    function displayVisitCounts() {
+      // Get stored visit data or initialize if not exists
+      const today = new Date().toISOString().split('T')[0];
+      let visitData = JSON.parse(localStorage.getItem('mezoVisitData')) || {
+        totalVisits: 0,
+        dailyVisits: {}
+      };
+      
+      // Initialize today's visits if not exists
+      if (!visitData.dailyVisits[today]) {
+        visitData.dailyVisits[today] = 0;
+      }
+      
+      // Update display
+      totalVisitsElement.textContent = formatNumber(visitData.totalVisits);
+      todayVisitsElement.textContent = formatNumber(visitData.dailyVisits[today]);
+    }
+    
+    // Track site visit
+    function trackVisit() {
+      // Get current date in YYYY-MM-DD format
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Get stored visit data or initialize if not exists
+      let visitData = JSON.parse(localStorage.getItem('mezoVisitData')) || {
+        totalVisits: 0,
+        dailyVisits: {}
+      };
+      
+      // Increment total visits
+      visitData.totalVisits++;
+      
+      // Initialize today's visits if not exists
+      if (!visitData.dailyVisits[today]) {
+        visitData.dailyVisits[today] = 0;
+      }
+      
+      // Increment today's visits
+      visitData.dailyVisits[today]++;
+      
+      // Save updated data
+      localStorage.setItem('mezoVisitData', JSON.stringify(visitData));
+      
+      // Update display
+      totalVisitsElement.textContent = formatNumber(visitData.totalVisits);
+      todayVisitsElement.textContent = formatNumber(visitData.dailyVisits[today]);
+      
+      // Send visit data to server (if you want to implement server-side tracking)
+      // This is optional and would require a server endpoint
+      /*
+      fetch('/.netlify/functions/track-visit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ date: today }),
+      }).catch(error => console.error('Error tracking visit:', error));
+      */
     }
     
     // Fetch data from API
