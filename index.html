@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mezo Matsnet Activity Statistics</title>
+  <style>
+    :root {
+      --primary-color: #e91e63;
+      --primary-dark: #c2185b;
+      --primary-light: #f48fb1;
+      --accent-color: #ff4081;
+      --text-color: #333;
+      --bg-color: #fff;
+      --card-bg: #f9f9f9;
+      --border-color: #e0e0e0;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 20px 0;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+    }
+
+    nav ul li {
+      margin-left: 20px;
+    }
+
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    nav ul li a:hover {
+      color: var(--primary-light);
+    }
+
+    .main-content {
+      margin-top: 40px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+
+    .btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th, .data-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table th {
+      background-color: var(--primary-light);
+      color: var(--text-color);
+      font-weight: 600;
+    }
+
+    .data-table tbody tr:hover {
+      background-color: rgba(244, 143, 177, 0.1);
+    }
+
+    .address-cell {
+      font-family: monospace;
+      word-break: break-all;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .pagination-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .page-info {
+      font-size: 14px;
+    }
+
+    .items-per-page {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .items-per-page select {
+      padding: 6px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .stat-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 20px;
+      text-align: center;
+      border-top: 4px solid var(--primary-color);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary-dark);
+      margin: 10px 0;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .loader {
+      display: flex;
+      justify-content: center;
+      padding: 40px 0;
+    }
+
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: var(--primary-color);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error-message {
+      background-color: #ffebee;
+      color: #c62828;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      border-left: 4px solid #c62828;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .tab-navigation {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px;
+    }
+
+    .tab-button {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      color: #666;
+      position: relative;
+    }
+
+    .tab-button.active {
+      color: var(--primary-color);
+    }
+
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background-color: var(--primary-color);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .jump-to-page {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .jump-to-page input {
+      width: 60px;
+      padding: 6px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      nav ul {
+        margin-top: 15px;
+      }
+
+      nav ul li {
+        margin: 0 10px;
+      }
+
+      .search-box {
+        flex-direction: column;
+      }
+
+      .pagination {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .data-table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .pagination-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div class="logo">Mezo Matsnet Activity Statistics</div>
+      <nav>
+        <ul>
+          <li><a href="#" id="nav-activity" class="active">Activity</a></li>
+          <li><a href="#" id="nav-stats">Statistics</a></li>
+          <li><a href="#" id="nav-search">Search</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="loading" class="loader">
+      <div class="spinner"></div>
+    </div>
+
+    <div id="error-container" class="error-message hidden">
+      Error loading data. Please try again later.
+    </div>
+
+    <div id="main-content" class="main-content hidden">
+      <!-- Activity Tab -->
+      <div id="activity-tab" class="tab-content active">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Address Activity</h2>
+          </div>
+          <div class="items-per-page">
+            <label for="items-per-page">Items per page:</label>
+            <select id="items-per-page">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Address</th>
+                <th>Transactions</th>
+                <th>Deployed Contracts</th>
+                <th>Contract Txs</th>
+                <th>Claimed Matsnet Sats</th>
+              </tr>
+            </thead>
+            <tbody id="activity-table-body">
+              <!-- Data will be populated here -->
+            </tbody>
+          </table>
+          <div class="pagination">
+            <div class="page-info">
+              Showing <span id="current-range-start">0</span>-<span id="current-range-end">0</span> of <span id="total-items">0</span> addresses
+            </div>
+            <div class="pagination-controls">
+              <button id="first-page" class="btn">First</button>
+              <button id="prev-page" class="btn">Previous</button>
+              <div class="jump-to-page">
+                <span>Page</span>
+                <input type="number" id="page-input" min="1" value="1">
+                <span>of <span id="total-pages">1</span></span>
+                <button id="go-to-page" class="btn">Go</button>
+              </div>
+              <button id="next-page" class="btn">Next</button>
+              <button id="last-page" class="btn">Last</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Tab -->
+      <div id="stats-tab" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Dataset Statistics</h2>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Addresses</div>
+              <div class="stat-value" id="total-addresses">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Transactions</div>
+              <div class="stat-value" id="total-transactions">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Average Transactions</div>
+              <div class="stat-value" id="avg-transactions">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Max Transactions</div>
+              <div class="stat-value" id="max-transactions">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Deployed Contracts</div>
+              <div class="stat-value" id="total-contracts">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Addresses with Contracts</div>
+              <div class="stat-value" id="addresses-with-contracts">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Claimed Matsnet Sats</div>
+              <div class="stat-value" id="total-claimed-btc">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Addresses with Claimed Sats</div>
+              <div class="stat-value" id="addresses-with-btc">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Tab -->
+      <div id="search-tab" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Address Search</h2>
+          </div>
+          <div class="search-box">
+            <input type="text" id="address-search" class="search-input" placeholder="Enter full or partial address...">
+            <button id="search-button" class="btn">Search</button>
+          </div>
+          <div id="search-results">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Address</th>
+                  <th>Transactions</th>
+                  <th>Deployed Contracts</th>
+                  <th>Contract Txs</th>
+                  <th>Claimed Matsnet Sats</th>
+                </tr>
+              </thead>
+              <tbody id="search-results-body">
+                <!-- Search results will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API URL
+    const API_URL = 'https://activity.test.mezo.org/';
+    
+    // State management
+    let activityData = [];
+    let currentPage = 1;
+    let itemsPerPage = 5;
+    let filteredData = [];
+    
+    // DOM Elements
+    const loadingElement = document.getElementById('loading');
+    const errorContainer = document.getElementById('error-container');
+    const mainContent = document.getElementById('main-content');
+    const activityTableBody = document.getElementById('activity-table-body');
+    const searchResultsBody = document.getElementById('search-results-body');
+    const itemsPerPageSelect = document.getElementById('items-per-page');
+    const prevPageButton = document.getElementById('prev-page');
+    const nextPageButton = document.getElementById('next-page');
+    const firstPageButton = document.getElementById('first-page');
+    const lastPageButton = document.getElementById('last-page');
+    const pageInput = document.getElementById('page-input');
+    const goToPageButton = document.getElementById('go-to-page');
+    const totalPagesElement = document.getElementById('total-pages');
+    const currentRangeStart = document.getElementById('current-range-start');
+    const currentRangeEnd = document.getElementById('current-range-end');
+    const totalItemsElement = document.getElementById('total-items');
+    const addressSearchInput = document.getElementById('address-search');
+    const searchButton = document.getElementById('search-button');
+    
+    // Tab navigation
+    const navActivity = document.getElementById('nav-activity');
+    const navStats = document.getElementById('nav-stats');
+    const navSearch = document.getElementById('nav-search');
+    const activityTab = document.getElementById('activity-tab');
+    const statsTab = document.getElementById('stats-tab');
+    const searchTab = document.getElementById('search-tab');
+    
+    // Stats elements
+    const totalAddressesElement = document.getElementById('total-addresses');
+    const totalTransactionsElement = document.getElementById('total-transactions');
+    const avgTransactionsElement = document.getElementById('avg-transactions');
+    const maxTransactionsElement = document.getElementById('max-transactions');
+    const totalContractsElement = document.getElementById('total-contracts');
+    const addressesWithContractsElement = document.getElementById('addresses-with-contracts');
+    const totalClaimedBtcElement = document.getElementById('total-claimed-btc');
+    const addressesWithBtcElement = document.getElementById('addresses-with-btc');
+    
+    // Format numbers with commas
+    function formatNumber(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    // Fetch data from API
+    async function fetchData() {
+      try {
+        loadingElement.classList.remove('hidden');
+        errorContainer.classList.add('hidden');
+        mainContent.classList.add('hidden');
+        
+        const response = await fetch(API_URL);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && Array.isArray(data.activity)) {
+          activityData = data.activity;
+          filteredData = [...activityData];
+          renderActivityTable();
+          calculateAndDisplayStats();
+          mainContent.classList.remove('hidden');
+        } else {
+          throw new Error('Invalid data format');
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        errorContainer.textContent = 'Error loading data: ' + error.message;
+        errorContainer.classList.remove('hidden');
+      } finally {
+        loadingElement.classList.add('hidden');
+      }
+    }
+    
+    // Render activity table
+    function renderActivityTable() {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, filteredData.length);
+      const displayData = filteredData.slice(startIndex, endIndex);
+      
+      activityTableBody.innerHTML = '';
+      
+      if (displayData.length === 0) {
+        const emptyRow = document.createElement('tr');
+        const emptyCell = document.createElement('td');
+        emptyCell.colSpan = 5;
+        emptyCell.textContent = 'No data available';
+        emptyCell.style.textAlign = 'center';
+        emptyRow.appendChild(emptyCell);
+        activityTableBody.appendChild(emptyRow);
+      } else {
+        displayData.forEach(item => {
+          const row = document.createElement('tr');
+          
+          const addressCell = document.createElement('td');
+          addressCell.textContent = item.address;
+          addressCell.classList.add('address-cell');
+          
+          const txCountCell = document.createElement('td');
+          txCountCell.textContent = item.tx_count;
+          
+          const deployedContractsCell = document.createElement('td');
+          deployedContractsCell.textContent = item.deployed_contracts;
+          
+          const deployedContractsTxCell = document.createElement('td');
+          deployedContractsTxCell.textContent = item.deployed_contracts_tx_count;
+          
+          const claimedBtcCell = document.createElement('td');
+          claimedBtcCell.textContent = formatNumber(item.claimed_btc);
+          
+          row.appendChild(addressCell);
+          row.appendChild(txCountCell);
+          row.appendChild(deployedContractsCell);
+          row.appendChild(deployedContractsTxCell);
+          row.appendChild(claimedBtcCell);
+          
+          activityTableBody.appendChild(row);
+        });
+      }
+      
+      // Update pagination info
+      const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+      totalPagesElement.textContent = totalPages;
+      currentRangeStart.textContent = filteredData.length > 0 ? startIndex + 1 : 0;
+      currentRangeEnd.textContent = endIndex;
+      totalItemsElement.textContent = filteredData.length;
+      
+      // Update page input
+      pageInput.value = currentPage;
+      pageInput.max = totalPages;
+      
+      // Update button states
+      prevPageButton.disabled = currentPage === 1;
+      nextPageButton.disabled = currentPage === totalPages;
+      firstPageButton.disabled = currentPage === 1;
+      lastPageButton.disabled = currentPage === totalPages;
+    }
+    
+    // Calculate and display statistics
+    function calculateAndDisplayStats() {
+      const totalAddresses = activityData.length;
+      const totalTransactions = activityData.reduce((sum, item) => sum + item.tx_count, 0);
+      const avgTransactions = totalAddresses > 0 ? (totalTransactions / totalAddresses).toFixed(2) : 0;
+      const maxTransactions = activityData.reduce((max, item) => Math.max(max, item.tx_count), 0);
+      
+      const totalContracts = activityData.reduce((sum, item) => sum + item.deployed_contracts, 0);
+      const addressesWithContracts = activityData.filter(item => item.deployed_contracts > 0).length;
+      
+      const totalClaimedBtc = activityData.reduce((sum, item) => sum + Number(item.claimed_btc), 0);
+      const addressesWithBtc = activityData.filter(item => Number(item.claimed_btc) > 0).length;
+      
+      totalAddressesElement.textContent = formatNumber(totalAddresses);
+      totalTransactionsElement.textContent = formatNumber(totalTransactions);
+      avgTransactionsElement.textContent = avgTransactions;
+      maxTransactionsElement.textContent = formatNumber(maxTransactions);
+      totalContractsElement.textContent = formatNumber(totalContracts);
+      addressesWithContractsElement.textContent = formatNumber(addressesWithContracts);
+      totalClaimedBtcElement.textContent = formatNumber(totalClaimedBtc);
+      addressesWithBtcElement.textContent = formatNumber(addressesWithBtc);
+    }
+    
+    // Search for addresses
+    function searchAddress() {
+      const searchTerm = addressSearchInput.value.trim().toLowerCase();
+      
+      if (searchTerm === '') {
+        // Clear search
+        searchResultsBody.innerHTML = '';
+        const emptyRow = document.createElement('tr');
+        const emptyCell = document.createElement('td');
+        emptyCell.colSpan = 5;
+        emptyCell.textContent = 'Enter an address to search';
+        emptyCell.style.textAlign = 'center';
+        emptyRow.appendChild(emptyCell);
+        searchResultsBody.appendChild(emptyRow);
+        return;
+      }
+      
+      const results = activityData.filter(item => 
+        item.address.toLowerCase().includes(searchTerm)
+      );
+      
+      searchResultsBody.innerHTML = '';
+      
+      if (results.length === 0) {
+        const emptyRow = document.createElement('tr');
+        const emptyCell = document.createElement('td');
+        emptyCell.colSpan = 5;
+        emptyCell.textContent = 'No matching addresses found';
+        emptyCell.style.textAlign = 'center';
+        emptyRow.appendChild(emptyCell);
+        searchResultsBody.appendChild(emptyRow);
+      } else {
+        results.forEach(item => {
+          const row = document.createElement('tr');
+          
+          const addressCell = document.createElement('td');
+          addressCell.textContent = item.address;
+          addressCell.classList.add('address-cell');
+          
+          const txCountCell = document.createElement('td');
+          txCountCell.textContent = item.tx_count;
+          
+          const deployedContractsCell = document.createElement('td');
+          deployedContractsCell.textContent = item.deployed_contracts;
+          
+          const deployedContractsTxCell = document.createElement('td');
+          deployedContractsTxCell.textContent = item.deployed_contracts_tx_count;
+          
+          const claimedBtcCell = document.createElement('td');
+          claimedBtcCell.textContent = formatNumber(item.claimed_btc);
+          
+          row.appendChild(addressCell);
+          row.appendChild(txCountCell);
+          row.appendChild(deployedContractsCell);
+          row.appendChild(deployedContractsTxCell);
+          row.appendChild(claimedBtcCell);
+          
+          searchResultsBody.appendChild(row);
+        });
+      }
+    }
+    
+    // Switch tabs
+    function switchTab(tabId) {
+      // Hide all tabs
+      activityTab.classList.remove('active');
+      statsTab.classList.remove('active');
+      searchTab.classList.remove('active');
+      
+      // Remove active class from all nav items
+      navActivity.classList.remove('active');
+      navStats.classList.remove('active');
+      navSearch.classList.remove('active');
+      
+      // Show selected tab
+      document.getElementById(tabId).classList.add('active');
+      
+      // Add active class to selected nav item
+      if (tabId === 'activity-tab') {
+        navActivity.classList.add('active');
+      } else if (tabId === 'stats-tab') {
+        navStats.classList.add('active');
+      } else if (tabId === 'search-tab') {
+        navSearch.classList.add('active');
+      }
+    }
+    
+    // Event listeners
+    itemsPerPageSelect.addEventListener('change', function() {
+      itemsPerPage = parseInt(this.value);
+      currentPage = 1;
+      renderActivityTable();
+    });
+    
+    prevPageButton.addEventListener('click', function() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderActivityTable();
+      }
+    });
+    
+    nextPageButton.addEventListener('click', function() {
+      const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderActivityTable();
+      }
+    });
+    
+    firstPageButton.addEventListener('click', function() {
+      currentPage = 1;
+      renderActivityTable();
+    });
+    
+    lastPageButton.addEventListener('click', function() {
+      const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+      currentPage = totalPages;
+      renderActivityTable();
+    });
+    
+    goToPageButton.addEventListener('click', function() {
+      const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+      const pageNum = parseInt(pageInput.value);
+      
+      if (pageNum >= 1 && pageNum <= totalPages) {
+        currentPage = pageNum;
+        renderActivityTable();
+      } else {
+        alert(`Please enter a page number between 1 and ${totalPages}`);
+        pageInput.value = currentPage;
+      }
+    });
+    
+    searchButton.addEventListener('click', searchAddress);
+    
+    addressSearchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        searchAddress();
+      }
+    });
+    
+    navActivity.addEventListener('click', function(e) {
+      e.preventDefault();
+      switchTab('activity-tab');
+    });
+    
+    navStats.addEventListener('click', function(e) {
+      e.preventDefault();
+      switchTab('stats-tab');
+    });
+    
+    navSearch.addEventListener('click', function(e) {
+      e.preventDefault();
+      switchTab('search-tab');
+    });
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      fetchData();
+    });
+  </script>
+</body>
+</html>
