@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mezo Matsnet Activity Statistics</title>
+  <!-- Add Inter font from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary-color: #e91e63;
@@ -20,7 +24,7 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Inter', sans-serif; /* Change to Inter font */
     }
 
     body {
@@ -53,27 +57,22 @@
 
     .logo {
       font-size: 24px;
-      font-weight: bold;
+      font-weight: 600;
     }
 
-    nav ul {
-      display: flex;
-      list-style: none;
+    .credit {
+      font-size: 14px;
+      font-weight: 500;
     }
 
-    nav ul li {
-      margin-left: 20px;
-    }
-
-    nav ul li a {
+    .credit a {
       color: white;
       text-decoration: none;
-      font-weight: 500;
-      transition: color 0.3s;
+      transition: opacity 0.3s;
     }
 
-    nav ul li a:hover {
-      color: var(--primary-light);
+    .credit a:hover {
+      opacity: 0.8;
     }
 
     .main-content {
@@ -95,12 +94,14 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .card-title {
       font-size: 18px;
       font-weight: 600;
       color: var(--primary-dark);
+      margin-bottom: 10px;
     }
 
     .btn {
@@ -126,7 +127,9 @@
     .search-box {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+      width: 100%;
+      max-width: 400px;
     }
 
     .search-input {
@@ -135,6 +138,7 @@
       border: 1px solid var(--border-color);
       border-radius: 4px;
       font-size: 14px;
+      font-family: 'Inter', sans-serif;
     }
 
     .data-table {
@@ -152,6 +156,26 @@
       background-color: var(--primary-light);
       color: var(--text-color);
       font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+
+    .data-table th:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .data-table th.sorted-asc::after {
+      content: "▲";
+      margin-left: 5px;
+      font-size: 12px;
+    }
+
+    .data-table th.sorted-desc::after {
+      content: "▼";
+      margin-left: 5px;
+      font-size: 12px;
     }
 
     .data-table tbody tr:hover {
@@ -159,7 +183,7 @@
     }
 
     .address-cell {
-      font-family: monospace;
+      font-family: 'Inter Mono', monospace;
       word-break: break-all;
     }
 
@@ -168,11 +192,14 @@
       justify-content: space-between;
       align-items: center;
       margin-top: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
     }
 
     .pagination-controls {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .page-info {
@@ -183,12 +210,14 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      margin-bottom: 15px;
     }
 
     .items-per-page select {
       padding: 6px;
       border: 1px solid var(--border-color);
       border-radius: 4px;
+      font-family: 'Inter', sans-serif;
     }
 
     .stats-grid {
@@ -250,45 +279,6 @@
       display: none;
     }
 
-    .tab-navigation {
-      display: flex;
-      border-bottom: 1px solid var(--border-color);
-      margin-bottom: 20px;
-    }
-
-    .tab-button {
-      padding: 10px 20px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 500;
-      color: #666;
-      position: relative;
-    }
-
-    .tab-button.active {
-      color: var(--primary-color);
-    }
-
-    .tab-button.active::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background-color: var(--primary-color);
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
     .jump-to-page {
       display: flex;
       align-items: center;
@@ -301,6 +291,27 @@
       border: 1px solid var(--border-color);
       border-radius: 4px;
       text-align: center;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .realtime-link {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .realtime-link a {
+      display: inline-block;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background-color 0.3s;
+    }
+
+    .realtime-link a:hover {
+      background-color: var(--primary-dark);
     }
 
     /* Responsive styles */
@@ -308,23 +319,16 @@
       .header-content {
         flex-direction: column;
         text-align: center;
-      }
-
-      nav ul {
-        margin-top: 15px;
-      }
-
-      nav ul li {
-        margin: 0 10px;
+        gap: 10px;
       }
 
       .search-box {
-        flex-direction: column;
+        max-width: 100%;
       }
 
       .pagination {
         flex-direction: column;
-        gap: 15px;
+        align-items: flex-start;
       }
 
       .stats-grid {
@@ -341,6 +345,12 @@
       .pagination-controls {
         flex-wrap: wrap;
         justify-content: center;
+        width: 100%;
+      }
+      
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
       }
     }
   </style>
@@ -349,6 +359,9 @@
   <header>
     <div class="header-content">
       <div class="logo">Mezo Matsnet Activity Statistics</div>
+      <div class="credit">
+        <a href="https://mallardlabs.xyz" target="_blank">by Mallard Labs</a>
+      </div>
     </div>
   </header>
 
@@ -401,6 +414,11 @@
             <div class="stat-value" id="addresses-with-btc">0</div>
           </div>
         </div>
+        <div class="realtime-link">
+          <a href="https://test-mezo.drops.mallardlabs.xyz/" target="_blank">
+            View the Network in real-time with Mallard Drops for Mezo Matsnet
+          </a>
+        </div>
       </div>
 
       <!-- Activity Table Section -->
@@ -423,11 +441,11 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Address</th>
-              <th>Transactions</th>
-              <th>Deployed Contracts</th>
-              <th>Contract Txs</th>
-              <th>Claimed Matsnet Sats</th>
+              <th data-sort="address">Address</th>
+              <th data-sort="tx_count" class="sorted-desc">Transactions</th>
+              <th data-sort="deployed_contracts">Deployed Contracts</th>
+              <th data-sort="deployed_contracts_tx_count">Contract Txs</th>
+              <th data-sort="claimed_btc">Claimed Matsnet Sats</th>
             </tr>
           </thead>
           <tbody id="activity-table-body">
@@ -462,15 +480,16 @@
     // State management
     let activityData = [];
     let currentPage = 1;
-    let itemsPerPage = 10;
+    let itemsPerPage = 10; // Default to 10 items per page
     let filteredData = [];
+    let currentSortField = 'tx_count'; // Default sort by transactions
+    let currentSortDirection = 'desc'; // Default sort direction is descending
     
     // DOM Elements
     const loadingElement = document.getElementById('loading');
     const errorContainer = document.getElementById('error-container');
     const mainContent = document.getElementById('main-content');
     const activityTableBody = document.getElementById('activity-table-body');
-    const searchResultsBody = document.getElementById('search-results-body');
     const itemsPerPageSelect = document.getElementById('items-per-page');
     const prevPageButton = document.getElementById('prev-page');
     const nextPageButton = document.getElementById('next-page');
@@ -483,7 +502,7 @@
     const currentRangeEnd = document.getElementById('current-range-end');
     const totalItemsElement = document.getElementById('total-items');
     const addressSearchInput = document.getElementById('address-search');
-    const searchButton = document.getElementById('search-button');
+    const tableHeaders = document.querySelectorAll('.data-table th[data-sort]');
     
     // Stats elements
     const totalAddressesElement = document.getElementById('total-addresses');
@@ -498,6 +517,11 @@
     // Format numbers with commas
     function formatNumber(num) {
       return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    // Format claimed sats (divide by 10^10)
+    function formatClaimedSats(value) {
+      return formatNumber(Math.floor(Number(value) / 10000000000));
     }
     
     // Fetch data from API
@@ -519,6 +543,7 @@
         if (data.success && Array.isArray(data.activity)) {
           activityData = data.activity;
           filteredData = [...activityData];
+          sortData(currentSortField, currentSortDirection);
           renderActivityTable();
           calculateAndDisplayStats();
           mainContent.classList.remove('hidden');
@@ -532,6 +557,44 @@
       } finally {
         loadingElement.classList.add('hidden');
       }
+    }
+    
+    // Sort data
+    function sortData(field, direction) {
+      filteredData.sort((a, b) => {
+        let valueA, valueB;
+        
+        // Special handling for claimed_btc to sort by actual value
+        if (field === 'claimed_btc') {
+          valueA = Math.floor(Number(a[field]) / 10000000000);
+          valueB = Math.floor(Number(b[field]) / 10000000000);
+        } else if (field === 'address') {
+          valueA = a[field].toLowerCase();
+          valueB = b[field].toLowerCase();
+        } else {
+          valueA = Number(a[field]);
+          valueB = Number(b[field]);
+        }
+        
+        if (direction === 'asc') {
+          return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
+        } else {
+          return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
+        }
+      });
+      
+      // Update sort indicators in the table headers
+      tableHeaders.forEach(header => {
+        const headerField = header.getAttribute('data-sort');
+        header.classList.remove('sorted-asc', 'sorted-desc');
+        
+        if (headerField === field) {
+          header.classList.add(direction === 'asc' ? 'sorted-asc' : 'sorted-desc');
+        }
+      });
+      
+      currentSortField = field;
+      currentSortDirection = direction;
     }
     
     // Render activity table
@@ -633,13 +696,9 @@
         );
       }
       
+      sortData(currentSortField, currentSortDirection);
       currentPage = 1;
       renderActivityTable();
-    }
-    
-    // Update the claimed BTC calculation
-    function formatClaimedSats(value) {
-      return formatNumber(Math.floor(Number(value) / 10000000000));
     }
     
     // Event listeners
@@ -690,33 +749,20 @@
     
     addressSearchInput.addEventListener('input', searchAddress);
     
-    // Initialize
-    document.addEventListener('DOMContentLoaded', function() {
-      fetchData();
-    });
-  </script>
-</body>
-</html>
-
-    addressSearchInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        searchAddress();
-      }
-    });
-    
-    navActivity.addEventListener('click', function(e) {
-      e.preventDefault();
-      switchTab('activity-tab');
-    });
-    
-    navStats.addEventListener('click', function(e) {
-      e.preventDefault();
-      switchTab('stats-tab');
-    });
-    
-    navSearch.addEventListener('click', function(e) {
-      e.preventDefault();
-      switchTab('search-tab');
+    // Add click event listeners to table headers for sorting
+    tableHeaders.forEach(header => {
+      header.addEventListener('click', function() {
+        const field = this.getAttribute('data-sort');
+        let direction = 'desc';
+        
+        // If already sorted by this field, toggle direction
+        if (field === currentSortField) {
+          direction = currentSortDirection === 'desc' ? 'asc' : 'desc';
+        }
+        
+        sortData(field, direction);
+        renderActivityTable();
+      });
     });
     
     // Initialize
