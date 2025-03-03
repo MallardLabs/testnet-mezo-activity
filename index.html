@@ -4,20 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mezo Matsnet Activity Statistics</title>
-  <meta name="description" content="Track and analyze activity on the Mezo Matsnet network. View transaction statistics, deployed contracts, and claimed Matsnet sats. By Mallard Labs.">
+  <meta name="description" content="Track and analyze activity on Mezo Matsnet. View transaction statistics, deployed contracts, and claimed matsnet sats. By Mallard Labs.">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://test-mezo.activity.mallardlabs.xyz/">
   <meta property="og:title" content="Mezo Matsnet Activity Statistics">
-  <meta property="og:description" content="Track and analyze activity on the Mezo Matsnet network. View transaction statistics, deployed contracts, and claimed Matsnet sats. By Mallard Labs.">
+  <meta property="og:description" content="Track and analyze activity on Mezo Matsnet. View transaction statistics, deployed contracts, and claimed matsnet sats. By Mallard Labs.">
   <meta property="og:image" content="https://test-mezo.activity.mallardlabs.xyz/assets/images/mezo-preview.webp">
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
   <meta property="twitter:url" content="https://test-mezo.activity.mallardlabs.xyz/">
   <meta property="twitter:title" content="Mezo Matsnet Activity Statistics">
-  <meta property="twitter:description" content="Track and analyze activity on the Mezo Matsnet network. View transaction statistics, deployed contracts, and claimed Matsnet sats. By Mallard Labs.">
+  <meta property="twitter:description" content="Track and analyze activity on Mezo Matsnet. View transaction statistics, deployed contracts, and claimed matsnet sats. By Mallard Labs.">
   <meta property="twitter:image" content="https://test-mezo.activity.mallardlabs.xyz/assets/images/mezo-preview.webp">
 
   <!-- Add favicon link -->
@@ -560,65 +560,39 @@
       return formatNumber(Math.floor(Number(value) / 10000000000));
     }
     
-    // Display visit counts
-    function displayVisitCounts() {
-      // Get stored visit data or initialize if not exists
-      const today = new Date().toISOString().split('T')[0];
-      let visitData = JSON.parse(localStorage.getItem('mezoVisitData')) || {
-        totalVisits: 0,
-        dailyVisits: {}
-      };
-      
-      // Initialize today's visits if not exists
-      if (!visitData.dailyVisits[today]) {
-        visitData.dailyVisits[today] = 0;
+    // Function to display visit counts from the server
+    async function displayVisitCounts() {
+      try {
+        const response = await fetch('/.netlify/functions/visits');
+        const data = await response.json();
+        
+        document.getElementById('total-visits').textContent = formatNumber(data.total);
+        document.getElementById('today-visits').textContent = formatNumber(data.today);
+      } catch (error) {
+        console.error('Error fetching visit counts:', error);
+        // Fallback to localStorage if server fails
+        displayLocalVisitCounts();
       }
-      
-      // Update display
-      totalVisitsElement.textContent = formatNumber(visitData.totalVisits);
-      todayVisitsElement.textContent = formatNumber(visitData.dailyVisits[today]);
     }
     
-    // Track site visit
-    function trackVisit() {
-      // Get current date in YYYY-MM-DD format
-      const today = new Date().toISOString().split('T')[0];
-      
-      // Get stored visit data or initialize if not exists
-      let visitData = JSON.parse(localStorage.getItem('mezoVisitData')) || {
-        totalVisits: 0,
-        dailyVisits: {}
-      };
-      
-      // Increment total visits
-      visitData.totalVisits++;
-      
-      // Initialize today's visits if not exists
-      if (!visitData.dailyVisits[today]) {
-        visitData.dailyVisits[today] = 0;
+    // Function to track a new visit
+    async function trackVisit() {
+      try {
+        await fetch('/.netlify/functions/visits', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            page: window.location.pathname,
+            timestamp: new Date().toISOString()
+          })
+        });
+      } catch (error) {
+        console.error('Error tracking visit:', error);
+        // Fallback to localStorage if server fails
+        trackLocalVisit();
       }
-      
-      // Increment today's visits
-      visitData.dailyVisits[today]++;
-      
-      // Save updated data
-      localStorage.setItem('mezoVisitData', JSON.stringify(visitData));
-      
-      // Update display
-      totalVisitsElement.textContent = formatNumber(visitData.totalVisits);
-      todayVisitsElement.textContent = formatNumber(visitData.dailyVisits[today]);
-      
-      // Send visit data to server (if you want to implement server-side tracking)
-      // This is optional and would require a server endpoint
-      /*
-      fetch('/.netlify/functions/track-visit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ date: today }),
-      }).catch(error => console.error('Error tracking visit:', error));
-      */
     }
     
     // Fetch data from API
