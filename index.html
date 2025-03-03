@@ -493,8 +493,8 @@
   </div>
 
   <script>
-    // API URL - Using allorigins.win CORS proxy
-    const API_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://activity.test.mezo.org/');
+    // API URL - Use a relative URL to our Netlify function
+    const API_URL = '/.netlify/functions/proxy-api';
     
     // State management
     let activityData = [];
@@ -552,31 +552,23 @@
         errorContainer.classList.add('hidden');
         mainContent.classList.add('hidden');
         
-        // Use the API_URL constant instead of hardcoding the URL
         const response = await fetch(API_URL);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
         }
         
-        const responseData = await response.json();
+        // The data is now directly from our Netlify function, no need to parse contents
+        const data = await response.json();
         
-        // This proxy returns the data in a different format
-        // The actual API response is in the 'contents' property as a string
-        if (responseData && responseData.contents) {
-          const data = JSON.parse(responseData.contents);
-          
-          if (data.success && Array.isArray(data.activity)) {
-            activityData = data.activity;
-            filteredData = [...activityData];
-            renderActivityTable();
-            calculateAndDisplayStats();
-            mainContent.classList.remove('hidden');
-          } else {
-            throw new Error('Invalid data format');
-          }
+        if (data.success && Array.isArray(data.activity)) {
+          activityData = data.activity;
+          filteredData = [...activityData];
+          renderActivityTable();
+          calculateAndDisplayStats();
+          mainContent.classList.remove('hidden');
         } else {
-          throw new Error('Invalid proxy response');
+          throw new Error('Invalid data format');
         }
       } catch (error) {
         console.error('Detailed fetch error:', error);
