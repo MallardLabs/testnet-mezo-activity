@@ -562,14 +562,22 @@
     
     // Function to display visit counts from the server
     async function displayVisitCounts() {
+      console.log("Fetching visit counts...");
       try {
         const response = await fetch('/.netlify/functions/visits');
+        console.log("Response status:", response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log("Received visit data:", data);
         
         document.getElementById('total-visits').textContent = formatNumber(data.total);
         document.getElementById('today-visits').textContent = formatNumber(data.today);
       } catch (error) {
-        console.error('Error fetching visit counts:', error);
+        console.error("Error fetching visit counts:", error);
         // Fallback to localStorage if server fails
         displayLocalVisitCounts();
       }
@@ -577,8 +585,9 @@
     
     // Function to track a new visit
     async function trackVisit() {
+      console.log("Tracking visit...");
       try {
-        await fetch('/.netlify/functions/visits', {
+        const response = await fetch('/.netlify/functions/visits', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -588,8 +597,18 @@
             timestamp: new Date().toISOString()
           })
         });
+        
+        console.log("Track visit response status:", response.status);
+        const data = await response.json();
+        console.log("Track visit response:", data);
+        
+        // Update the display with the returned counts
+        if (data.success) {
+          document.getElementById('total-visits').textContent = formatNumber(data.total);
+          document.getElementById('today-visits').textContent = formatNumber(data.today);
+        }
       } catch (error) {
-        console.error('Error tracking visit:', error);
+        console.error("Error tracking visit:", error);
         // Fallback to localStorage if server fails
         trackLocalVisit();
       }
