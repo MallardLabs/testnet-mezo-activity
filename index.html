@@ -493,7 +493,7 @@
   </div>
 
   <script>
-    // API URL - Try a different CORS proxy
+    // API URL - Using allorigins.win CORS proxy
     const API_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://activity.test.mezo.org/');
     
     // State management
@@ -552,30 +552,31 @@
         errorContainer.classList.add('hidden');
         mainContent.classList.add('hidden');
         
-        // Try with a different URL format
-        const response = await fetch('https://corsproxy.io/?https://activity.test.mezo.org/', {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'Origin': window.location.origin
-          }
-        });
+        // Use the API_URL constant instead of hardcoding the URL
+        const response = await fetch(API_URL);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
         }
         
-        const data = await response.json();
+        const responseData = await response.json();
         
-        if (data.success && Array.isArray(data.activity)) {
-          activityData = data.activity;
-          filteredData = [...activityData];
-          renderActivityTable();
-          calculateAndDisplayStats();
-          mainContent.classList.remove('hidden');
+        // This proxy returns the data in a different format
+        // The actual API response is in the 'contents' property as a string
+        if (responseData && responseData.contents) {
+          const data = JSON.parse(responseData.contents);
+          
+          if (data.success && Array.isArray(data.activity)) {
+            activityData = data.activity;
+            filteredData = [...activityData];
+            renderActivityTable();
+            calculateAndDisplayStats();
+            mainContent.classList.remove('hidden');
+          } else {
+            throw new Error('Invalid data format');
+          }
         } else {
-          throw new Error('Invalid data format');
+          throw new Error('Invalid proxy response');
         }
       } catch (error) {
         console.error('Detailed fetch error:', error);
