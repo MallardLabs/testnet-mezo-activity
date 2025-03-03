@@ -29,6 +29,43 @@ exports.handler = async function(event, context) {
     const today = new Date().toISOString().split('T')[0];
     console.log("Today's date:", today);
     
+    // First, ensure the collection and index exist
+    try {
+      // Check if collection exists, create if not
+      try {
+        await client.query(q.Get(q.Collection('counters')));
+        console.log("Collection 'counters' exists");
+      } catch (err) {
+        if (err.name === 'NotFound') {
+          console.log("Creating 'counters' collection");
+          await client.query(q.CreateCollection({ name: 'counters' }));
+        } else {
+          throw err;
+        }
+      }
+      
+      // Check if index exists, create if not
+      try {
+        await client.query(q.Get(q.Index('counters_by_name')));
+        console.log("Index 'counters_by_name' exists");
+      } catch (err) {
+        if (err.name === 'NotFound') {
+          console.log("Creating 'counters_by_name' index");
+          await client.query(
+            q.CreateIndex({
+              name: 'counters_by_name',
+              source: q.Collection('counters'),
+              terms: [{ field: ['data', 'name'] }]
+            })
+          );
+        } else {
+          throw err;
+        }
+      }
+    } catch (err) {
+      console.error("Error setting up database:", err);
+    }
+    
     if (event.httpMethod === 'GET') {
       console.log("Processing GET request");
       
@@ -60,21 +97,18 @@ exports.handler = async function(event, context) {
       } catch (err) {
         console.log("Counter not found, returning zeros:", err.message);
         // If the counter doesn't exist yet, return zeros
-        if (err.name === 'NotFound') {
-          return {
-            statusCode: 200,
-            headers,
-            body: JSON.stringify({ 
-              total: 0, 
-              today: 0,
-              debug: {
-                time: new Date().toISOString(),
-                error: "Counter not found"
-              }
-            })
-          };
-        }
-        throw err;
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({ 
+            total: 0, 
+            today: 0,
+            debug: {
+              time: new Date().toISOString(),
+              error: err.message
+            }
+          })
+        };
       }
       
     } else if (event.httpMethod === 'POST') {
@@ -94,11 +128,7 @@ exports.handler = async function(event, context) {
         data = result.data;
       } catch (err) {
         console.log("Counter not found, will create new one:", err.message);
-        if (err.name === 'NotFound') {
-          counterExists = false;
-        } else {
-          throw err;
-        }
+        counterExists = false;
       }
       
       // Increment the counts
@@ -109,47 +139,60 @@ exports.handler = async function(event, context) {
       console.log("Updated counts:", { total: data.total, today: data.daily[today] });
       
       // Update or create the counter
-      if (counterExists) {
-        console.log("Updating existing counter");
-        await client.query(
-          q.Update(
-            q.Select(
-              'ref',
-              q.Get(
-                q.Match(q.Index('counters_by_name'), 'visit-counter')
-              )
-            ),
-            { data }
-          )
-        );
-      } else {
-        console.log("Creating new counter");
-        await client.query(
-          q.Create(
-            q.Collection('counters'),
-            { 
-              data: {
-                name: 'visit-counter',
-                ...data
+      try {
+        if (counterExists) {
+          console.log("Updating existing counter");
+          await client.query(
+            q.Update(
+              q.Select(
+                'ref',
+                q.Get(
+                  q.Match(q.Index('counters_by_name'), 'visit-counter')
+                )
+              ),
+              { data }
+            )
+          );
+        } else {
+          console.log("Creating new counter");
+          await client.query(
+            q.Create(
+              q.Collection('counters'),
+              { 
+                data: {
+                  name: 'visit-counter',
+                  ...data
+                }
               }
+            )
+          );
+        }
+        
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({ 
+            success: true, 
+            total: data.total, 
+            today: data.daily[today],
+            debug: {
+              time: new Date().toISOString(),
+              fauna: true
             }
-          )
-        );
+          })
+        };
+      } catch (err) {
+        console.error("Error updating counter:", err);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ 
+            error: err.message,
+            description: err.description,
+            stack: err.stack
+          })
+        };
       }
-      
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ 
-          success: true, 
-          total: data.total, 
-          today: data.daily[today],
-          debug: {
-            time: new Date().toISOString(),
-            fauna: true
-          }
-        })
-      };
     }
     
   } catch (error) {
