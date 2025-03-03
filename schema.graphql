@@ -1,0 +1,10 @@
+type VisitCounter @model {
+  id: ID!
+  total: Int!
+  daily: [DailyCount!]!
+}
+
+type DailyCount {
+  date: String!
+  count: Int!
+}

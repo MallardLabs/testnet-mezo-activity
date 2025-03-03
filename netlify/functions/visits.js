@@ -2,6 +2,7 @@ const { getStore } = require('@netlify/blobs');
 
 exports.handler = async function(event, context) {
   console.log("Function invoked with method:", event.httpMethod);
+  console.log("Headers:", JSON.stringify(event.headers));
   
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -20,10 +21,12 @@ exports.handler = async function(event, context) {
 
   try {
     // Get the store
+    console.log("Getting KV store...");
     const store = getStore('visit-counter');
     
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split('T')[0];
+    console.log("Today's date:", today);
     
     if (event.httpMethod === 'GET') {
       console.log("Processing GET request");
@@ -34,15 +37,25 @@ exports.handler = async function(event, context) {
       
       try {
         // Get total visits
+        console.log("Fetching total visits...");
         const totalData = await store.get('total-visits');
+        console.log("Total visits data exists:", !!totalData);
+        
         if (totalData) {
-          totalVisits = parseInt(await totalData.text()) || 0;
+          const textData = await totalData.text();
+          console.log("Total visits raw data:", textData);
+          totalVisits = parseInt(textData) || 0;
         }
         
         // Get today's visits
+        console.log(`Fetching today's visits (${today})...`);
         const todayData = await store.get(`daily-visits-${today}`);
+        console.log("Today visits data exists:", !!todayData);
+        
         if (todayData) {
-          todayVisits = parseInt(await todayData.text()) || 0;
+          const textData = await todayData.text();
+          console.log("Today visits raw data:", textData);
+          todayVisits = parseInt(textData) || 0;
         }
       } catch (error) {
         console.error("Error reading from KV store:", error);
@@ -53,7 +66,14 @@ exports.handler = async function(event, context) {
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ total: totalVisits, today: todayVisits })
+        body: JSON.stringify({ 
+          total: totalVisits, 
+          today: todayVisits,
+          debug: {
+            time: new Date().toISOString(),
+            today: today
+          }
+        })
       };
       
     } else if (event.httpMethod === 'POST') {
@@ -65,15 +85,25 @@ exports.handler = async function(event, context) {
       
       try {
         // Get total visits
+        console.log("Fetching total visits...");
         const totalData = await store.get('total-visits');
+        console.log("Total visits data exists:", !!totalData);
+        
         if (totalData) {
-          totalVisits = parseInt(await totalData.text()) || 0;
+          const textData = await totalData.text();
+          console.log("Total visits raw data:", textData);
+          totalVisits = parseInt(textData) || 0;
         }
         
         // Get today's visits
+        console.log(`Fetching today's visits (${today})...`);
         const todayData = await store.get(`daily-visits-${today}`);
+        console.log("Today visits data exists:", !!todayData);
+        
         if (todayData) {
-          todayVisits = parseInt(await todayData.text()) || 0;
+          const textData = await todayData.text();
+          console.log("Today visits raw data:", textData);
+          todayVisits = parseInt(textData) || 0;
         }
       } catch (error) {
         console.error("Error reading from KV store:", error);
@@ -83,11 +113,29 @@ exports.handler = async function(event, context) {
       totalVisits++;
       todayVisits++;
       
-      // Save updated counts
-      await store.set('total-visits', totalVisits.toString());
-      await store.set(`daily-visits-${today}`, todayVisits.toString());
+      console.log("Incrementing counts to:", { total: totalVisits, today: todayVisits });
       
-      console.log("Updated counts:", { total: totalVisits, today: todayVisits });
+      // Save updated counts
+      try {
+        console.log("Saving total visits:", totalVisits);
+        await store.set('total-visits', totalVisits.toString());
+        
+        console.log(`Saving today's visits (${today}):`, todayVisits);
+        await store.set(`daily-visits-${today}`, todayVisits.toString());
+        
+        console.log("Save operation completed");
+      } catch (error) {
+        console.error("Error writing to KV store:", error);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ 
+            error: "Failed to save visit data",
+            message: error.message,
+            stack: error.stack
+          })
+        };
+      }
       
       return {
         statusCode: 200,
@@ -95,7 +143,11 @@ exports.handler = async function(event, context) {
         body: JSON.stringify({ 
           success: true, 
           total: totalVisits, 
-          today: todayVisits 
+          today: todayVisits,
+          debug: {
+            time: new Date().toISOString(),
+            today: today
+          }
         })
       };
     }
@@ -105,7 +157,11 @@ exports.handler = async function(event, context) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: error.message })
+      body: JSON.stringify({ 
+        error: error.message,
+        stack: error.stack,
+        time: new Date().toISOString()
+      })
     };
   }
 };
