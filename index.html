@@ -1,4 +1,104 @@
+          
+          activityTableBody.appendChild(row);
+        });
+      }
+      
+      // Update pagination info
+      const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+      totalPagesElement.textContent = totalPages;
+      currentRangeStart.textContent = filteredData.length > 0 ? startIndex + 1 : 0;
+      currentRangeEnd.textContent = endIndex;
+      totalItemsElement.textContent = filteredData.length;
+      
+      // Update page input
+      pageInput.value = currentPage;
+      pageInput.max = totalPages;
+      
+      // Update button states
+      prevPageButton.disabled = currentPage === 1;
+      nextPageButton.disabled = currentPage === totalPages;
+      firstPageButton.disabled = currentPage === 1;
+      lastPageButton.disabled = currentPage === totalPages;
+    }
+    
+    // Calculate and display statistics
+    function calculateAndDisplayStats() {
+      const totalAddresses = activityData.length;
+      const totalTransactions = activityData.reduce((sum, item) => sum + item.tx_count, 0);
+      const avgTransactions = totalAddresses > 0 ? (totalTransactions / totalAddresses).toFixed(2) : 0;
+      const maxTransactions = activityData.reduce((max, item) => Math.max(max, item.tx_count), 0);
+      
+      const totalContracts = activityData.reduce((sum, item) => sum + item.deployed_contracts, 0);
+      const addressesWithContracts = activityData.filter(item => item.deployed_contracts > 0).length;
+      
+      // Update how total claimed BTC is calculated
+      const totalClaimedBtc = activityData.reduce((sum, item) => sum + Number(item.claimed_btc), 0) / 10000000000;
+      const addressesWithBtc = activityData.filter(item => Number(item.claimed_btc) > 0).length;
+      
+      totalAddressesElement.textContent = formatNumber(totalAddresses);
+      totalTransactionsElement.textContent = formatNumber(totalTransactions);
+      avgTransactionsElement.textContent = avgTransactions;
+      maxTransactionsElement.textContent = formatNumber(maxTransactions);
+      totalContractsElement.textContent = formatNumber(totalContracts);
+      addressesWithContractsElement.textContent = formatNumber(addressesWithContracts);
+      totalClaimedBtcElement.textContent = formatNumber(Math.floor(totalClaimedBtc));
+      addressesWithBtcElement.textContent = formatNumber(addressesWithBtc);
 <!DOCTYPE html>
+    }
+    
+    // Search for addresses
+    function searchAddress() {
+      const searchTerm = addressSearchInput.value.trim().toLowerCase();
+      
+      if (searchTerm === '') {
+        // Clear search
+        searchResultsBody.innerHTML = '';
+        const emptyRow = document.createElement('tr');
+        const emptyCell = document.createElement('td');
+        emptyCell.colSpan = 5;
+        emptyCell.textContent = 'Enter an address to search';
+        emptyCell.style.textAlign = 'center';
+        emptyRow.appendChild(emptyCell);
+        searchResultsBody.appendChild(emptyRow);
+        return;
+      }
+      
+      const results = activityData.filter(item => 
+        item.address.toLowerCase().includes(searchTerm)
+      );
+      
+      searchResultsBody.innerHTML = '';
+      
+      if (results.length === 0) {
+        const emptyRow = document.createElement('tr');
+        const emptyCell = document.createElement('td');
+        emptyCell.colSpan = 5;
+        emptyCell.textContent = 'No matching addresses found';
+        emptyCell.style.textAlign = 'center';
+        emptyRow.appendChild(emptyCell);
+        searchResultsBody.appendChild(emptyRow);
+      } else {
+        results.forEach(item => {
+          const row = document.createElement('tr');
+          
+          const addressCell = document.createElement('td');
+          addressCell.textContent = item.address;
+          addressCell.classList.add('address-cell');
+          
+          const txCountCell = document.createElement('td');
+          txCountCell.textContent = item.tx_count;
+          
+          const deployedContractsCell = document.createElement('td');
+          deployedContractsCell.textContent = item.deployed_contracts;
+          
+          const deployedContractsTxCell = document.createElement('td');
+          deployedContractsTxCell.textContent = item.deployed_contracts_tx_count;
+          
+          const claimedBtcCell = document.createElement('td');
+          claimedBtcCell.textContent = formatSats(item.claimed_btc);
+          
+          row.appendChild(addressCell);
+          row.appendChild(txCountCell);
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -204,6 +304,10 @@
       padding: 20px;
       text-align: center;
       border-top: 4px solid var(--primary-color);
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .stat-value {
@@ -211,11 +315,16 @@
       font-weight: bold;
       color: var(--primary-dark);
       margin: 10px 0;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+      line-height: 1.2;
     }
 
     .stat-label {
       font-size: 14px;
       color: #666;
+      margin-bottom: 8px;
     }
 
     .loader {
@@ -378,10 +487,10 @@
           <div class="items-per-page">
             <label for="items-per-page">Items per page:</label>
             <select id="items-per-page">
-              <option value="5">5</option>
               <option value="10">10</option>
               <option value="25">25</option>
               <option value="50">50</option>
+              <option value="100">100</option>
             </select>
           </div>
           <table class="data-table">
@@ -499,7 +608,7 @@
     // State management
     let activityData = [];
     let currentPage = 1;
-    let itemsPerPage = 5;
+    let itemsPerPage = 10;
     let filteredData = [];
     
     // DOM Elements
@@ -543,6 +652,13 @@
     // Format numbers with commas
     function formatNumber(num) {
       return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    // Add a new function to format sats values
+    function formatSats(sats) {
+      // Divide by 10^10 to get the correct value
+      const actualSats = Number(sats) / 10000000000;
+      return formatNumber(Math.floor(actualSats));
     }
     
     // Fetch data from API
@@ -613,7 +729,7 @@
           deployedContractsTxCell.textContent = item.deployed_contracts_tx_count;
           
           const claimedBtcCell = document.createElement('td');
-          claimedBtcCell.textContent = formatNumber(item.claimed_btc);
+          claimedBtcCell.textContent = formatSats(item.claimed_btc);
           
           row.appendChild(addressCell);
           row.appendChild(txCountCell);
@@ -715,7 +831,7 @@
           deployedContractsTxCell.textContent = item.deployed_contracts_tx_count;
           
           const claimedBtcCell = document.createElement('td');
-          claimedBtcCell.textContent = formatNumber(item.claimed_btc);
+          claimedBtcCell.textContent = formatSats(item.claimed_btc);
           
           row.appendChild(addressCell);
           row.appendChild(txCountCell);
