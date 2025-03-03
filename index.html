@@ -564,7 +564,7 @@
     async function displayVisitCounts() {
       console.log("Fetching visit counts...");
       try {
-        const response = await fetch('/.netlify/functions/visits');
+        const response = await fetch('/.netlify/functions/counter');
         console.log("Response status:", response.status);
         
         if (!response.ok) {
@@ -587,7 +587,7 @@
     async function trackVisit() {
       console.log("Tracking visit...");
       try {
-        const response = await fetch('/.netlify/functions/visits', {
+        const response = await fetch('/.netlify/functions/counter', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
