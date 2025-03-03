@@ -726,7 +726,7 @@
           <td>${formatNumber(item.tx_count)}</td>
           <td>${formatNumber(item.deployed_contracts)}</td>
           <td>${formatNumber(item.deployed_contracts_tx_count)}</td>
-          <td>${formatNumber(item.claimed_btc)}</td>
+          <td>${formatClaimedSats(item.claimed_btc)}</td>
         `;
         
         tableBody.appendChild(row);
