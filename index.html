@@ -4,6 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mezo Matsnet Activity Statistics</title>
+  <meta name="description" content="Track and analyze activity on the Mezo Matsnet network. View transaction statistics, deployed contracts, and claimed Matsnet Sats.">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://your-site-url.com/">
+  <meta property="og:title" content="Mezo Matsnet Activity Statistics">
+  <meta property="og:description" content="Track and analyze activity on the Mezo Matsnet network. View transaction statistics, deployed contracts, and claimed Matsnet Sats.">
+  <meta property="og:image" content="https://your-site-url.com/mezo-preview.jpg">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://your-site-url.com/">
+  <meta property="twitter:title" content="Mezo Matsnet Activity Statistics">
+  <meta property="twitter:description" content="Track and analyze activity on the Mezo Matsnet network. View transaction statistics, deployed contracts, and claimed Matsnet Sats.">
+  <meta property="twitter:image" content="https://your-site-url.com/mezo-preview.jpg">
   <!-- Add Inter font from Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -471,6 +486,10 @@
         </div>
       </div>
     </div>
+
+    <div class="visit-counter">
+      <span id="total-visits">0</span> total visits | <span id="today-visits">0</span> today
+    </div>
   </div>
 
   <script>
@@ -767,6 +786,13 @@
     
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
+      // Display visit counts first
+      displayVisitCounts();
+      
+      // Track this visit
+      trackVisit();
+      
+      // Fetch data
       fetchData();
     });
   </script>
