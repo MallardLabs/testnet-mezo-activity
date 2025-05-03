@@ -5,52 +5,38 @@ exports.handler = async function(event, context) {
     // The URL we want to fetch
     const apiUrl = 'https://activity.test.mezo.org/';
     
-    // Create a promise that resolves with the response headers
+    // Create a promise that resolves with the response
     const response = await new Promise((resolve, reject) => {
-      const res = https.get(apiUrl, (res) => {
-        // Set up the response headers
-        const headers = {
-          'Content-Type': res.headers['content-type'] || 'application/json',
-          'Transfer-Encoding': 'chunked'
-        };
+      const chunks = [];
+      
+      https.get(apiUrl, (res) => {
+        res.on('data', (chunk) => {
+          chunks.push(chunk);
+        });
         
-        resolve({
-          statusCode: res.statusCode,
-          headers: headers,
-          body: '' // We'll stream the body
+        res.on('end', () => {
+          const body = Buffer.concat(chunks);
+          resolve({
+            statusCode: res.statusCode,
+            headers: res.headers,
+            body: body.toString()
+          });
+        });
+        
+        res.on('error', (error) => {
+          reject(error);
         });
       }).on('error', (error) => {
         reject(error);
-      });
-      
-      // Stream the response body
-      context.succeed({
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Transfer-Encoding': 'chunked'
-        },
-        body: '',
-        isBase64Encoded: false
-      });
-      
-      res.on('data', (chunk) => {
-        context.succeed({
-          statusCode: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            'Transfer-Encoding': 'chunked'
-          },
-          body: chunk.toString(),
-          isBase64Encoded: false
-        });
       });
     });
     
     // Return the response with streaming enabled
     return {
       statusCode: response.statusCode,
-      headers: response.headers,
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: response.body,
       isBase64Encoded: false
     };
